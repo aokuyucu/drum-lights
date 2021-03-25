@@ -10,12 +10,13 @@ Button::Button(byte pin) {
   init();
 }
 
-Button::Button(byte pin, byte pin_mode) {
+Button::Button(byte pin, byte pin_mode, long debounceDelay) {
   this->pin = pin;
   this->pin_mode = pin_mode;
+  this->debounceDelay = debounceDelay;
 
   if (pin_mode == INPUT_PULLUP) {
-    // Using INPUT_PULLUP, so everything is flipped.
+    // Using INPUT_PULLUP, so everything is flipped, i.e. HIGH == not pressed
     lastReading = HIGH;
   }
   else {
@@ -60,4 +61,11 @@ bool Button::isPressed() {
   else {
     return (getState() == HIGH);
   }
+}
+
+void Button::printStatus() {
+  Serial.print("debounceDelay: ");
+  Serial.println(debounceDelay);
+  Serial.print("lastDebounceTime: ");
+  Serial.println(lastDebounceTime);
 }

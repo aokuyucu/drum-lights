@@ -17,7 +17,7 @@ const drumID myDrum = easel;    // What drum am I?
 const int N_PIXELS_MAIN = 37;   // Number of LEDs attached to the Arduino.
                                 // 150 for strip on basses, 64 for grid on snares and tenors.
                                 // 37 on the test strip.
-const uint8_t numColors = 9;    // Number of colors:
+const uint8_t numColors = 10;    // Number of colors:
                                 // new: snares and tenors have 3, basses have 2, easel has 9.
                                 // old: snares and tenors have 7, basses have 8.
 uint8_t brightness_main = 255;  // Brightness of the main light strip or grid.
@@ -32,7 +32,7 @@ const int N_PIXELS_INDICATOR = 1;   // Single pixel indicator light.
 const int ANALOG_PIN = A0;        // Piezo is connected to Analog A0 on Wemos or Gemma D2 (A1)
 const int LED_PIN_MAIN = D5;      // NeoPixel LED strand is connected to D5
 const int LED_PIN_INDICATOR = D7; // Single, indicator LED is connected to D7
-const int PAINT_BUTTON_PIN = D4;  // Paint button is connected to D2 on Wemos
+const int PAINT_BUTTON_PIN = D2;  // Paint button is connected to D2 on Wemos
 const int BOX_BUTTON_PIN = D4;    // Push button on the box is connected to D4 on Wemos
 
 const int LOOP_DELAY = 200; // Time (in milliseconds) to pause between loops
@@ -51,7 +51,8 @@ volatile uint8_t colorSwitch = 1;
 volatile unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 volatile uint32_t interruptDebounce = 250;    // or 150; 250 seems to work best
 
-Button paintButton(PAINT_BUTTON_PIN, INPUT_PULLUP);
+Button paintButton(PAINT_BUTTON_PIN, INPUT_PULLUP, 50);
+//Button boxButton(BOX_BUTTON_PIN, INPUT_PULLUP, 250);
 
 void setup() {
   Serial.begin(9600);  // use the serial port
@@ -72,8 +73,8 @@ void setup() {
   setIndicator(myColor); // Indicator pixel should always be ON and should show the strip color.
   
   // initialize the pushbutton pin as an input
-  //pinMode(BOX_BUTTON_PIN, INPUT);
-  //attachInterrupt(digitalPinToInterrupt(BOX_BUTTON_PIN), handleInterrupt, FALLING); // FALLING or RISING or CHANGE
+  pinMode(BOX_BUTTON_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(BOX_BUTTON_PIN), handleInterrupt, FALLING); // FALLING or RISING or CHANGE
 }
 
 void loop() {
@@ -88,6 +89,46 @@ void loop() {
   pixels.show(); // Send the updated pixel colors to the hardware.
   
   //delay(LOOP_DELAY);  // delay to avoid overloading the serial port buffer
+}
+
+/* 
+ * Handle a button press on the box button.
+ */
+ICACHE_RAM_ATTR void handleInterrupt() {
+  //Serial.println("handleInterrupt");
+  /*
+boxButton.printStatus();
+
+  if (boxButton.isPressed()) {
+    Serial.print("button pressed --> colorSwitch, color: ");
+    Serial.println(colorSwitch);
+
+    // Get the color at the colorSwitch'th value of the array,
+    //  then increment colorSwitch
+    myColor = colors[colorSwitch++];
+
+    // If colorSwitch has gone past the last index value of the array, then reset to index 0.
+    if (colorSwitch >= numColors)
+      colorSwitch = 0;
+    setIndicator(myColor);  // Change the indicator LED to match the new color
+  }
+  */
+  
+  if ((millis() - lastDebounceTime) >= interruptDebounce) {
+    Serial.print("button pressed --> colorSwitch, color: ");
+    Serial.println(colorSwitch);
+
+    // Get the color at the colorSwitch'th value of the array,
+    //  then increment colorSwitch
+    myColor = colors[colorSwitch++];
+
+    // If colorSwitch has gone past the last index value of the array, then reset to index 0.
+    if (colorSwitch >= numColors)
+      colorSwitch = 0;
+    setIndicator(myColor);  // Change the indicator LED to match the new color
+    lastDebounceTime = millis();  // not sure if this should be current millis() or millis() from the if statement above.
+  }
+
 }
 
 // Initialize the colors[] array based on the drum ID
@@ -193,6 +234,7 @@ void initColors(drumID drum) {
     colors[6] = magenta;
     colors[7] = turquoise;
     colors[8] = pink;
+    colors[9] = black;
   }
 
   myColor = colors[0];

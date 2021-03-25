@@ -11,17 +11,19 @@ class Button {
     byte lastReading;
     byte pin_mode;
     unsigned long lastDebounceTime = 0;
-    unsigned long debounceDelay = 50;
+    unsigned long debounceDelay;  // = 50;
     
   public:
     Button(byte pin);
-    Button(byte pin, byte pin_mode);
+    Button(byte pin, byte pin_mode, long debounceDelay);
 
     void init();
     void update();
 
     byte getState();
     bool isPressed();
+
+    void printStatus();
 };
 
 #endif
