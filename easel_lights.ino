@@ -14,8 +14,9 @@
 // ACTION: These next four variables must be adjusted to the correct value for each drum
 const drumID myDrum = easel;    // What drum am I?
                                 // snare, tenor, bass1, bass2, etc.
-const int N_PIXELS_MAIN = 64;   // Number of LEDs attached to the Arduino.
+const int N_PIXELS_MAIN = 37;   // Number of LEDs attached to the Arduino.
                                 // 150 for strip on basses, 64 for grid on snares and tenors.
+                                // 37 on the test strip.
 const uint8_t numColors = 9;    // Number of colors:
                                 // new: snares and tenors have 3, basses have 2, easel has 9.
                                 // old: snares and tenors have 7, basses have 8.
