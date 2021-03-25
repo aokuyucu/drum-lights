@@ -15,7 +15,8 @@ enum drumID {
   snare3,
   tenor,
   tenor1,
-  tenor2
+  tenor2,
+  easel
 };
 
 //Define timing for flashes, all in milliseconds
