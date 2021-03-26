@@ -11,11 +11,12 @@ class Button {
     byte lastReading;
     byte pin_mode;
     unsigned long lastDebounceTime = 0;
-    unsigned long debounceDelay;  // = 50;
+    unsigned long debounceDelay = 50;
+    bool isInterruptButton = false;
     
   public:
     Button(byte pin);
-    Button(byte pin, byte pin_mode, long debounceDelay);
+    Button(byte pin, byte pin_mode, bool isInterruptButton, long debounceDelay);
 
     void init();
     void update();
