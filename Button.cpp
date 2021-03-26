@@ -10,9 +10,10 @@ Button::Button(byte pin) {
   init();
 }
 
-Button::Button(byte pin, byte pin_mode, long debounceDelay) {
+Button::Button(byte pin, byte pin_mode, bool isInterruptButton, long debounceDelay) {
   this->pin = pin;
   this->pin_mode = pin_mode;
+  this->isInterruptButton = isInterruptButton;
   this->debounceDelay = debounceDelay;
 
   if (pin_mode == INPUT_PULLUP) {
@@ -54,13 +55,27 @@ byte Button::getState() {
 }
 
 bool Button::isPressed() {
-  if (pin_mode == INPUT_PULLUP) {
-    // Using INPUT_PULLUP, so everything is flipped.
-    return (getState() == LOW);
+  bool result = false;
+  // The logic for determining a button press differs when the button triggers an interrupt (the if clause)
+  //   vs when we're trying to detect a button press in the loop (the else clause).
+  // I'm not sure why this is the case, but this code works in those two scenarios.
+  if (isInterruptButton) {
+    if ((millis() - lastDebounceTime) >= debounceDelay) {
+      result = true;
+      // not sure if this should be current millis() or millis() from the if statement above.
+      lastDebounceTime = millis();
+    }
   }
   else {
-    return (getState() == HIGH);
+    if (pin_mode == INPUT_PULLUP) {
+      // Using INPUT_PULLUP, so everything is flipped.
+      result = (getState() == LOW);
+    }
+    else {
+      result = (getState() == HIGH);
+    }
   }
+  return result;
 }
 
 void Button::printStatus() {
