@@ -14,7 +14,7 @@
 // ACTION: These next four variables must be adjusted to the correct value for each drum
 const drumID myDrum = easel;    // What drum am I?
                                 // snare, tenor, bass1, bass2, etc.
-const int N_PIXELS_MAIN = 64;   // Number of LEDs attached to the Arduino.
+const int N_PIXELS_MAIN = 37;   // Number of LEDs attached to the Arduino.
                                 // 150 for strip on basses, 64 for grid on snares and tenors.
                                 // 37 on the test strip.
 const uint8_t numColors = 10;    // Number of colors:
@@ -51,29 +51,28 @@ volatile uint8_t colorSwitch = 1;
 volatile unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 volatile uint32_t interruptDebounce = 250;    // or 150; 250 seems to work best
 
-Button paintButton(PAINT_BUTTON_PIN, INPUT_PULLUP, 50);
-//Button boxButton(BOX_BUTTON_PIN, INPUT_PULLUP, 250);
+Button paintButton(PAINT_BUTTON_PIN, INPUT_PULLUP, false, 50);
+Button boxButton(BOX_BUTTON_PIN, INPUT_PULLUP, true, 250);
 
 void setup() {
   Serial.begin(9600);  // use the serial port
 
+  initColors(myDrum);
+
   pixels.begin();     // INITIALIZE NeoPixel strip object (REQUIRED)
   indicator.begin();  // Initialize the Indicator strip
 
-  initColors(myDrum);
+  // Set to full brightness for the duration of the sketch
+  pixels.setBrightness(brightness_main);
+  indicator.setBrightness(brightness_indicator);
+  setIndicator(myColor); // Indicator pixel should always be ON and should show the strip color.
 
   // Startup sequence(s)
   chase(pixels.Color(255, 0, 0), pixels.Color(0, 255, 0), pixels.Color(0, 0, 255));
   startup(myColor);
   
-  // Set to full brightness for the duration of the sketch
-  pixels.setBrightness(brightness_main);
-  indicator.setBrightness(brightness_indicator);
-
-  setIndicator(myColor); // Indicator pixel should always be ON and should show the strip color.
-  
   // initialize the pushbutton pin as an input
-  pinMode(BOX_BUTTON_PIN, INPUT_PULLUP);
+  //pinMode(BOX_BUTTON_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(BOX_BUTTON_PIN), handleInterrupt, FALLING); // FALLING or RISING or CHANGE
 }
 
@@ -96,12 +95,11 @@ void loop() {
  */
 ICACHE_RAM_ATTR void handleInterrupt() {
   //Serial.println("handleInterrupt");
-  /*
-boxButton.printStatus();
+  //boxButton.printStatus();
 
   if (boxButton.isPressed()) {
-    Serial.print("button pressed --> colorSwitch, color: ");
-    Serial.println(colorSwitch);
+    //Serial.print("button pressed --> colorSwitch, color: ");
+    //Serial.println(colorSwitch);
 
     // Get the color at the colorSwitch'th value of the array,
     //  then increment colorSwitch
@@ -112,23 +110,6 @@ boxButton.printStatus();
       colorSwitch = 0;
     setIndicator(myColor);  // Change the indicator LED to match the new color
   }
-  */
-  
-  if ((millis() - lastDebounceTime) >= interruptDebounce) {
-    Serial.print("button pressed --> colorSwitch, color: ");
-    Serial.println(colorSwitch);
-
-    // Get the color at the colorSwitch'th value of the array,
-    //  then increment colorSwitch
-    myColor = colors[colorSwitch++];
-
-    // If colorSwitch has gone past the last index value of the array, then reset to index 0.
-    if (colorSwitch >= numColors)
-      colorSwitch = 0;
-    setIndicator(myColor);  // Change the indicator LED to match the new color
-    lastDebounceTime = millis();  // not sure if this should be current millis() or millis() from the if statement above.
-  }
-
 }
 
 // Initialize the colors[] array based on the drum ID
